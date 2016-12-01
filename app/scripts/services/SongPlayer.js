@@ -1,14 +1,24 @@
 //Left off on Revisit wishful coding chekpoint 7
 (function() {
-     function SongPlayer() {
+     function SongPlayer(Fixtures) {
          var SongPlayer = {};
          
-         var currentSong = null;
+         var currentAlbum = Fixtures.getAlbum();
          /**
          * @desc Buzz object audio file
          * @type {Object}
          */
          var currentBuzzObject = null;
+         
+         /**
+         * @function playSong
+         * @desc Plays the currentBuzzObject and sets the song playing condition to true
+         * @param {Object} song
+         */
+         var playSong = function(){
+            currentBuzzObject.play();
+            song.playing = true;
+         };
          
          /**
          * @function setSong
@@ -18,8 +28,7 @@
          
          var setSong = function(song) {
             if (currentBuzzObject) {
-                currentBuzzObject.stop();
-                currentSong.playing = null;
+                stopSong();
             }
  
             currentBuzzObject = new buzz.sound(song.audioUrl, {
@@ -27,8 +36,29 @@
                 preload: true
             });
  
-            currentSong = song;
-        };
+            SongPlayer.currentSong = song;
+         };
+         
+         
+         /**
+         * @function getSongIndex
+         * @desc Returns the index of the specified song 
+         * @param {Object} song
+         */
+         var getSongIndex = function(song){
+             return currentAlbum.songs.indexOf(song);
+         };
+         
+         /**
+         * @function stopSong
+         * @desc 
+         */
+         var stopSong = function(){
+            currentBuzzObject.stop();
+            SongPlayer.currentSong.playing = null;
+         };
+         
+         SongPlayer.currentSong = null;
          
          /**
          * @function SongPlayer.play
@@ -36,10 +66,11 @@
          * @param {Object} song
          */
          SongPlayer.play = function(song) {
-             if(currentSong !== song){
+             song = song || SongPlayer.currentSong;
+             if(SongPlayer.currentSong !== song){
                 setSong(song);
                 playSong();
-             } else if(currentSong === song){
+             } else if(SongPlayer.currentSong === song){
                  if(currentBuzzObject.isPaused()){
                      currentBuzzObject.play();
                  }
@@ -52,18 +83,43 @@
          * @param {Object} song
          */
          SongPlayer.pause = function(song){
+             song = song || SongPlayer.currentSong;
              currentBuzzObject.pause();
              song.playing = false;
          };
          
          /**
-         * @function playSong
-         * @desc Plays the currentBuzzObject and sets the song playing condition to true
-         * @param {Object} song
+         * @function SongPlayer.previous
+         * @desc Allows the user to move to the previously played song
          */
-         var playSong = function(){
-            currentBuzzObject.play();
-            song.playing = true;
+         SongPlayer.previous = function() {
+            var currentSongIndex = getSongIndex(SongPlayer.currentSong);
+            currentSongIndex--;
+             
+            if (currentSongIndex < 0) {
+                stopSong();
+            } else{
+                var song = currentAlbum.song[currentSongIndex];
+                setSong(song);
+                playSong(song);
+            }
+         };
+         
+         /**
+         * @function SongPlayer.next
+         * @desc Allows the user to move to the next song within the current album
+         */
+         SongPlayer.next = function(){
+            var currentSongIndex = getSongIndex(SongPlayer.currentSong);
+            currentSongIndex++;
+             
+            if (currentSongIndex > currentAlbum.song.length) {
+                stopSong();
+            } else{
+                var song = currentAlbum.song[currentSongIndex];
+                setSong(song);
+                playSong(song);
+            }
          };
          
          return SongPlayer;
