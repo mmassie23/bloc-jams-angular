@@ -1,6 +1,6 @@
 //Left off on Revisit wishful coding chekpoint 7
 (function() {
-     function SongPlayer(Fixtures) {
+     function SongPlayer($rootScope, Fixtures) {
          var SongPlayer = {};
          
          var currentAlbum = Fixtures.getAlbum();
@@ -35,6 +35,12 @@
                 formats: ['mp3'],
                 preload: true
             });
+             
+            currentBuzzObject.bind('timeupdate', function(){
+                $rootScope.$apply(function() {
+                    SongPlayer.currentTime = currentBuzzObject.getTime();
+                });
+            });
  
             SongPlayer.currentSong = song;
          };
@@ -58,7 +64,23 @@
             SongPlayer.currentSong.playing = null;
          };
          
+         SongPlayer.volume = null;
+         
+         SongPlayer.setVolume = function(volume){
+             if(currentBuzzObject){
+                 currentBuzzObject.setVolume(volume);
+             }
+         };
+         
          SongPlayer.currentSong = null;
+         
+         SongPlayer.currentTime = null;
+         
+         SongPlayer.setCurrentTime = function(time){
+           if(currentBuzzObject){
+               currentBuzzObject.setTime(time);
+           }  
+         };
          
          /**
          * @function SongPlayer.play
@@ -127,5 +149,5 @@
  
      angular
          .module('blocJams')
-         .factory('SongPlayer', SongPlayer);
+         .factory('SongPlayer', ['$rootScope', 'Fixtures', SongPlayer]);
  })();
